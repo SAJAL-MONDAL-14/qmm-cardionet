@@ -1,0 +1,8 @@
+__pycache__/
+*.pth
+*.dat
+*.hea
+*.zip
+data/ptbxl/records100/
+data/ptbxl/records500/
+.env
