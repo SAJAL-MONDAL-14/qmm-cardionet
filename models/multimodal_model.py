@@ -1,51 +1,50 @@
 import torch
 import torch.nn as nn
+from models.quantum_layer import QuantumLayer
 
 class ECGBranch(nn.Module):
     def __init__(self):
         super().__init__()
-        self.conv = nn.Sequential(
+        self.net = nn.Sequential(
             nn.Conv1d(1, 16, 5),
-            nn.ReLU(),
-            nn.MaxPool1d(2),
-            nn.Conv1d(16, 32, 5),
             nn.ReLU(),
             nn.AdaptiveAvgPool1d(1)
         )
 
     def forward(self, x):
         x = x.unsqueeze(1)
-        x = self.conv(x)
+        x = self.net(x)
         return x.view(x.size(0), -1)
-
 
 class ClinicalBranch(nn.Module):
     def __init__(self):
         super().__init__()
-        self.fc = nn.Sequential(
-            nn.Linear(13, 32),
+        self.net = nn.Sequential(
+            nn.Linear(13, 16),
             nn.ReLU()
         )
 
     def forward(self, x):
-        return self.fc(x)
+        return self.net(x)
 
-
-class MultimodalNet(nn.Module):
+class MultimodalQuantumNet(nn.Module):
     def __init__(self):
         super().__init__()
         self.ecg = ECGBranch()
         self.clinical = ClinicalBranch()
 
-        self.classifier = nn.Sequential(
-            nn.Linear(32 + 32, 32),
-            nn.ReLU(),
-            nn.Linear(32, 1)
-        )
+        self.fusion = nn.Linear(16 + 16, 4)  # must match n_qubits
+        self.quantum = QuantumLayer()
+
+        self.classifier = nn.Linear(4, 1)
 
     def forward(self, clinical_x, ecg_x):
         ecg_feat = self.ecg(ecg_x)
         clin_feat = self.clinical(clinical_x)
 
         fused = torch.cat([ecg_feat, clin_feat], dim=1)
-        return self.classifier(fused)
+        fused = self.fusion(fused)
+
+        q_out = self.quantum(fused)
+        q_out = q_out.float()          
+        return self.classifier(q_out)

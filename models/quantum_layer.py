@@ -1,25 +1,34 @@
-# models/quantum_layer.py
-from qiskit import QuantumCircuit
-from qiskit.circuit import Parameter
-from qiskit_machine_learning.neural_networks import EstimatorQNN
-from qiskit_machine_learning.connectors import TorchConnector
+import pennylane as qml
+import torch
 import torch.nn as nn
+import numpy as np
 
-def create_qnn(n_qubits=8):
-    qc = QuantumCircuit(n_qubits)
+n_qubits = 4
+dev = qml.device("default.qubit", wires=n_qubits)
 
-    params = [Parameter(f"θ{i}") for i in range(n_qubits)]
+@qml.qnode(dev, interface="torch")
+def quantum_circuit(inputs, weights):
+    qml.AngleEmbedding(inputs, wires=range(n_qubits))
+    qml.StronglyEntanglingLayers(weights, wires=range(n_qubits))
+    return [qml.expval(qml.PauliZ(i)) for i in range(n_qubits)]
 
-    for i in range(n_qubits):
-        qc.ry(params[i], i)
+class QuantumLayer(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.weights = nn.Parameter(
+            torch.randn(3, n_qubits, 3)
+        )
 
-    for i in range(n_qubits - 1):
-        qc.cx(i, i + 1)
+    def forward(self, x):
+        """
+        x shape: [batch_size, n_qubits]
+        """
+        outputs = []
 
-    qnn = EstimatorQNN(
-        circuit=qc,
-        input_params=[],
-        weight_params=params
-    )
+        for i in range(x.shape[0]):
+            q_out = quantum_circuit(x[i], self.weights)
+            q_out = torch.stack(q_out)   # convert list → tensor
+            outputs.append(q_out)
 
-    return TorchConnector(qnn)
+        return torch.stack(outputs).float()
+

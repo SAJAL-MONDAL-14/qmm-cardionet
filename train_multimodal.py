@@ -1,9 +1,10 @@
+print("USING QUANTUM MULTIMODAL TRAINING SCRIPT")
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 
 from dataset_multimodal import MultimodalDataset
-from models.multimodal_model import MultimodalNet
+from models.multimodal_model import MultimodalQuantumNet
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -14,7 +15,7 @@ dataset = MultimodalDataset(
 
 loader = DataLoader(dataset, batch_size=8, shuffle=True)
 
-model = MultimodalNet().to(device)
+model = MultimodalQuantumNet().to(device)
 criterion = nn.BCEWithLogitsLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 

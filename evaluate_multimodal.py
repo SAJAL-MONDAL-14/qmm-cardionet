@@ -3,7 +3,7 @@ from torch.utils.data import DataLoader
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
 
 from dataset_multimodal import MultimodalDataset
-from models.multimodal_model import MultimodalNet
+from models.multimodal_model import MultimodalQuantumNet
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -14,7 +14,7 @@ dataset = MultimodalDataset(
 
 loader = DataLoader(dataset, batch_size=16, shuffle=False)
 
-model = MultimodalNet().to(device)
+model = MultimodalQuantumNet().to(device)
 model.load_state_dict(torch.load("best_multimodal_model.pth", map_location=device))
 model.eval()
 

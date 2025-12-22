@@ -1,10 +1,10 @@
 import torch
 import wfdb
-from models.multimodal_model import MultimodalNet
+from models.multimodal_model import MultimodalQuantumNet
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
-model = MultimodalNet().to(device)
+model = MultimodalQuantumNet().to(device)
 model.load_state_dict(torch.load("best_multimodal_model.pth", map_location=device))
 model.eval()
 
