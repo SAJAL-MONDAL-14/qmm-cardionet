@@ -10,7 +10,6 @@ model.eval()
 
 print("\n HEART DISEASE PREDICTION (MULTIMODAL)\n")
 
-# ------------------ Clinical Input ------------------
 inputs = []
 inputs.append(float(input("Age: ")))
 inputs.append(float(input("Sex (1=Male, 0=Female): ")))
@@ -28,7 +27,6 @@ inputs.append(float(input("Thal (0=normal,1=fixed,2=reversible): ")))
 
 clinical_x = torch.tensor(inputs, dtype=torch.float32).unsqueeze(0).to(device)
 
-# ------------------ ECG Input ------------------
 ecg_path = input("\nEnter ECG record path (without .dat/.hea): ")
 
 signal, _ = wfdb.rdsamp(ecg_path)
@@ -41,7 +39,6 @@ else:
 
 ecg_x = signal.unsqueeze(0).to(device)
 
-# ------------------ Prediction ------------------
 with torch.no_grad():
     out = model(clinical_x, ecg_x)
     prob = torch.sigmoid(out).item()
